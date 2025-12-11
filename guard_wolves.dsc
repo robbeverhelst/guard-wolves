@@ -325,19 +325,20 @@ guard_wolf_wander:
     on delta time secondly every:8:
     - define wolves <server.flag[guard_wolves]||<list>>
 
-    # Rebuild list if empty (happens after server restart if startup script fails)
-    - if <[wolves].is_empty>:
-      - define all_wolves <list>
-      - foreach <server.worlds> as:world:
-        - define world_wolves <[world].entities[wolf]>
-        - foreach <[world_wolves]> as:wolf:
-          - if <[wolf].has_flag[guard_mode]>:
-            - define all_wolves:->:<[wolf]>
-      - if !<[all_wolves].is_empty>:
-        - flag server guard_wolves:<[all_wolves]>
-        - define wolves <[all_wolves]>
-      - else:
-        - stop
+    # Always rebuild/sync the list to catch any wolves that fell out
+    - define all_wolves <list>
+    - foreach <server.worlds> as:world:
+      - define world_wolves <[world].entities[wolf]>
+      - foreach <[world_wolves]> as:wolf:
+        - if <[wolf].has_flag[guard_mode]>:
+          - define all_wolves:->:<[wolf]>
+
+    # Update server list with all discovered guard wolves
+    - if !<[all_wolves].is_empty>:
+      - flag server guard_wolves:<[all_wolves]>
+      - define wolves <[all_wolves]>
+    - else:
+      - stop
 
     - foreach <[wolves]> as:wolf:
       # Only show debug if owner has debug flag enabled
