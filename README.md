@@ -1,8 +1,8 @@
 # Guard Wolves
 
-> Transform your tamed wolves into stationary guardians that patrol and defend your territory
+> Transform your tamed wolves into guard wolves that patrol and defend your territory
 
-A Denizen script for Minecraft that enables tamed wolves to guard specific locations without following you, complete with smart AI, combat behavior, and beautiful visual effects.
+A Denizen script for Minecraft that enables tamed wolves to guard specific locations without following you, complete with smart AI and combat behavior.
 
 ![Minecraft Version](https://img.shields.io/badge/Minecraft-1.20.5+-green.svg)
 ![Denizen](https://img.shields.io/badge/Denizen-Required-blue.svg)
@@ -22,10 +22,6 @@ A Denizen script for Minecraft that enables tamed wolves to guard specific locat
 - ❌ Never attacks players
 - ❌ Never attacks creepers (prevents explosions)
 - ❌ Never attacks passive animals
-
-### Visual & Audio Effects
-- **Enabling Guard Mode:** Critical hit particles and 2-second glowing effect
-- **Disabling Guard Mode:** Happy green sparkles
 
 ## Installation
 
