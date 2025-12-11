@@ -1,3 +1,14 @@
+get_armor_icon:
+  type: procedure
+  debug: false
+  definitions: wolf
+  script:
+  - define armor_item <[wolf].equipment_map.get[body]||air>
+  - if <[armor_item].material.name> != air:
+    - determine "🛡 "
+  - else:
+    - determine ""
+
 guard_wolves_command:
   type: command
   name: guard_wolves
@@ -51,11 +62,7 @@ guard_wolves_command:
       - define current_loc <[wolf].location>
       - define hp <[wolf].health.round>
       - define max_hp <[wolf].health_max.round>
-      - define armor_item <[wolf].equipment_map.get[body]||air>
-      - if <[armor_item]> != air:
-        - define armor_icon "🛡 "
-      - else:
-        - define armor_icon ""
+      - define armor_icon <proc[get_armor_icon].context[<[wolf]>]>
       - narrate "<gray>• <aqua><[wolf_display_name]> <[armor_icon]><dark_gray>(<[variant]>) <red>❤ <[hp]>/<[max_hp]> <gray><italic>Sitting<&r> at <[current_loc].simple>"
 
     # Display guarding wolves
@@ -68,11 +75,7 @@ guard_wolves_command:
       - define guard_loc <[wolf].flag[guard_point]>
       - define hp <[wolf].health.round>
       - define max_hp <[wolf].health_max.round>
-      - define armor_item <[wolf].equipment_map.get[body]||air>
-      - if <[armor_item]> != air:
-        - define armor_icon "🛡 "
-      - else:
-        - define armor_icon ""
+      - define armor_icon <proc[get_armor_icon].context[<[wolf]>]>
       - narrate "<green>• <aqua><[wolf_display_name]> <[armor_icon]><dark_gray>(<[variant]>) <red>❤ <[hp]>/<[max_hp]> <green><bold>GUARDING<&r> at <[guard_loc].simple>"
 
     # Display following wolves
@@ -85,11 +88,7 @@ guard_wolves_command:
       - define current_loc <[wolf].location>
       - define hp <[wolf].health.round>
       - define max_hp <[wolf].health_max.round>
-      - define armor_item <[wolf].equipment_map.get[body]||air>
-      - if <[armor_item]> != air:
-        - define armor_icon "🛡 "
-      - else:
-        - define armor_icon ""
+      - define armor_icon <proc[get_armor_icon].context[<[wolf]>]>
       - narrate "<yellow>• <aqua><[wolf_display_name]> <[armor_icon]><dark_gray>(<[variant]>) <red>❤ <[hp]>/<[max_hp]> <yellow>Following at <[current_loc].simple>"
 
     - stop
@@ -116,7 +115,6 @@ guard_wolf_startup:
     # Rebuild guard wolves list on server startup
     on server start:
     - wait 5s
-    - narrate "<gold>[Guard Wolves] Rebuilding guard wolf registry..." targets:<server.online_ops>
 
     # Find all wolves in all worlds that have guard_mode flag
     - define all_wolves <list>
@@ -137,7 +135,6 @@ guard_wolf_startup:
 
     # Rebuild the server list
     - flag server guard_wolves:<[all_wolves]>
-    - narrate "<green>[Guard Wolves] Found <[all_wolves].size> guard wolves, restored health" targets:<server.online_ops>
 
 guard_wolf_toggle:
   type: world
@@ -289,7 +286,7 @@ guard_wolf_toggle:
         - narrate "<red>⚠ Guard wolf died: <aqua><[wolf_name]> <dark_gray>(<[variant]>)<red> at <[location]> - <[cause]>" targets:<[owner]>
         - playsound <[owner]> sound:entity_wolf_death pitch:1.0 volume:1
       # Clean up from server list
-      - flag server guard_wolves:<-:<context.entity>>
+      - flag server guard_wolves:<-:<context.entity>
 
 guard_wolf_combat:
   type: world
