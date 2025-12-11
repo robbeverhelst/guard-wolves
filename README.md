@@ -1,8 +1,8 @@
 # Guard Wolves
 
-> Transform your tamed wolves into autonomous guardians that patrol and defend your territory
+> Transform your tamed wolves into stationary guardians that patrol and defend your territory
 
-A Denizen script for Minecraft that enables tamed wolves to guard specific locations without following you, complete with smart AI, combat behavior, health management, and beautiful visual effects.
+A Denizen script for Minecraft that enables tamed wolves to guard specific locations without following you, complete with smart AI, combat behavior, and beautiful visual effects.
 
 ![Minecraft Version](https://img.shields.io/badge/Minecraft-1.20.5+-green.svg)
 ![Denizen](https://img.shields.io/badge/Denizen-Required-blue.svg)
@@ -13,8 +13,7 @@ A Denizen script for Minecraft that enables tamed wolves to guard specific locat
 ### Core Functionality
 - 🛡️ **Guard Mode Toggle** - Right-click with a stick to enable/disable guard mode
 - 🎯 **Smart AI** - Wolves patrol within a 15-block radius and automatically return to their guard point
-- ⚔️ **Autonomous Combat** - Detects and attacks hostile mobs within range
-- 💚 **Health Persistence** - Saves and restores wolf health through server restarts
+- ⚔️ **Combat System** - Detects and attacks hostile mobs within range
 - 🔄 **Automatic Recovery** - Teleports stuck wolves back to their guard point with invulnerability
 - 📋 **Wolf Management** - List all your wolves with status, health, location, and armor indicators
 
@@ -23,24 +22,16 @@ A Denizen script for Minecraft that enables tamed wolves to guard specific locat
 - ❌ Never attacks players
 - ❌ Never attacks creepers (prevents explosions)
 - ❌ Never attacks passive animals
-- 🚫 Stops scripted movement during combat for natural chase speed
 
 ### Visual & Audio Effects
-- **Enabling Guard Mode:**
-  - Deep growl + armor equip sound
-  - Critical hit particles
-  - 2-second glowing effect
-
-- **Disabling Guard Mode:**
-  - Friendly bark
-  - Happy green sparkles
+- **Enabling Guard Mode:** Critical hit particles and 2-second glowing effect
+- **Disabling Guard Mode:** Happy green sparkles
 
 ## Installation
 
 ### Requirements
 - Minecraft 1.20.5 or higher
 - [Denizen](https://denizenscript.com/) plugin installed on your server
-- [Citizens](https://www.spigotmc.org/resources/citizens.13811/) plugin (Denizen dependency)
 
 ### Setup
 1. Download `guard_wolves.dsc`
@@ -89,12 +80,11 @@ When a wolf enters guard mode:
 ### AI Behavior
 The AI runs every **8 seconds** for each guard wolf:
 
-1. **Health Management** - Saves current health every cycle
-2. **Distance Check** - Monitors distance from guard point
-3. **Return Logic** - Walks back at speed 0.3 if >15 blocks away
-4. **Stuck Detection** - Teleports wolf home if stuck for 1+ minute
-5. **Home Check** - Every 2 minutes, teleports if >3 blocks away for 4+ minutes
-6. **Combat Scan** - Every 2 seconds, detects nearby hostile mobs
+1. **Distance Check** - Monitors distance from guard point
+2. **Return Logic** - Walks back slowly if >15 blocks away
+3. **Stuck Detection** - Teleports wolf home if stuck for 1+ minute
+4. **Home Check** - Every 2 minutes, teleports if >3 blocks away for 4+ minutes
+5. **Combat Scan** - Every 2 seconds, detects nearby hostile mobs
 
 ### Teleport Safety
 All teleports include:
@@ -106,8 +96,6 @@ All teleports include:
 ### Health System
 - **Guard wolves cannot be healed with meat** (shows warning message)
 - **Must disable guard mode to heal**
-- Health persists through server restarts
-- Max health automatically restored after restart
 
 ### Death Notifications
 When a guard wolf dies, you receive:
@@ -131,20 +119,10 @@ Edit line 468:
 ```
 Lower = slower (0.1-1.0 range)
 
-### Customizing Sounds & Effects
+### Customizing Visual Effects
 
-**Guard Mode Enable (lines 239-244):**
-```yaml
-- playsound <player> sound:entity_wolf_growl pitch:0.7 volume:1
-- playsound <player> sound:item_armor_equip_netherite pitch:1.0 volume:0.8
-- playeffect effect:crit at:<[wolf].location.add[0,0.5,0]> quantity:30 offset:0.3,0.5,0.3
-```
-
-**Guard Mode Disable (lines 193-194):**
-```yaml
-- playsound <player> sound:entity_wolf_ambient pitch:1.3 volume:1
-- playeffect effect:villager_happy at:<[wolf].location.add[0,0.5,0]> quantity:15 offset:0.3,0.5,0.3
-```
+**Guard Mode Enable:** Edit particle effects and glowing duration around line 241
+**Guard Mode Disable:** Edit particle effects around line 194
 
 ### Changing Health Values
 Edit the max health (default 40):
@@ -192,7 +170,6 @@ on delta time secondly every:8
 
 ### Wolf moving too fast/slow
 - The script doesn't modify base movement speed
-- Only the return walk command uses `speed:0.3`
 - Combat and natural movement use vanilla speeds
 
 ## Technical Details
