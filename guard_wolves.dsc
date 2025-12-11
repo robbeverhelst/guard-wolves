@@ -162,6 +162,8 @@ guard_wolf_toggle:
   events:
     # Prevent healing guard wolves with meat - show warning instead
     on player right clicks entity_flagged:guard_mode with:vanilla_tagged:wolf_food:
+    # Event fires twice
+    - ratelimit <player> 1t
     - narrate "<red>You can't heal a guarding wolf. Disable guard mode first to heal it."
     - playsound <player> sound:entity_wolf_whine pitch:0.8 volume:1
     - determine cancelled
@@ -307,7 +309,8 @@ guard_wolf_combat:
 
       # COMBAT: Check for nearby hostile mobs (excluding creepers)
       - define combat_range <script[guard_wolves_constants].data_key[combat_range]>
-      - define nearby_mobs <[wolf].location.find_entities[monster].within[<[combat_range]>].filter[type.not.equals[CREEPER]]>
+      - define nearby_mobs <[wolf].location.find_entities[monster].within[<[combat_range]>]>
+      - define nearby_mobs <[nearby_mobs].filter_tag[<[filter_value].type.equals[CREEPER].not>]>
 
       - if <[nearby_mobs].any>:
         - define target <[nearby_mobs].get[1]>
