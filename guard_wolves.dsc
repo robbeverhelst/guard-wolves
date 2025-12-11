@@ -308,7 +308,7 @@ guard_wolf_combat:
       - define nearby_mobs <[wolf].location.find_entities[monster].within[15]>
 
       # Filter out creepers (don't want explosions!)
-      - define valid_targets <[nearby_mobs].filter[entity_type.is[!=].to[CREEPER]]>
+      - define valid_targets <[nearby_mobs].exclude[entity_type.equals[CREEPER]]>
 
       - if !<[valid_targets].is_empty>:
         - define target <[valid_targets].get[1]>
@@ -466,9 +466,7 @@ guard_wolf_wander:
         - if <[velocity]> < 0.1:
           - if <[show_debug]>:
             - narrate "<yellow>[RETURN] Wolf too far, walking back to guard center slowly" targets:<[owner]>
-          # Use the center location's highest block to ensure solid ground
-          - define safe_center <[center].x>,<[center].y>,<[center].z>,<[center].world>
-          - walk <[wolf]> <[safe_center]> speed:0.3
+          - walk <[wolf]> <[center]> speed:0.3
         - else:
           - if <[show_debug]>:
             - narrate "<gray>[SKIP] Wolf already moving (probably walking back)" targets:<[owner]>
