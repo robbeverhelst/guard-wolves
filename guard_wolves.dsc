@@ -5,9 +5,9 @@ get_armor_icon:
   script:
   - define armor_item <[wolf].equipment_map.get[body]||air>
   - if <[armor_item]> != air:
-    - determine "🛡 "
+    - determine 🛡<&sp>
   - else:
-    - determine ""
+    - determine <empty>
 
 guard_wolves_command:
   type: command
@@ -58,7 +58,7 @@ guard_wolves_command:
       - if <[wolf].custom_name.exists>:
         - define wolf_display_name <[wolf].custom_name>
       - else:
-        - define wolf_display_name "Wolf"
+        - define wolf_display_name Wolf
       - define current_loc <[wolf].location>
       - define hp <[wolf].health.round>
       - define max_hp <[wolf].health_max.round>
@@ -71,7 +71,7 @@ guard_wolves_command:
       - if <[wolf].custom_name.exists>:
         - define wolf_display_name <[wolf].custom_name>
       - else:
-        - define wolf_display_name "Wolf"
+        - define wolf_display_name Wolf
       - define guard_loc <[wolf].flag[guard_point]>
       - define hp <[wolf].health.round>
       - define max_hp <[wolf].health_max.round>
@@ -84,7 +84,7 @@ guard_wolves_command:
       - if <[wolf].custom_name.exists>:
         - define wolf_display_name <[wolf].custom_name>
       - else:
-        - define wolf_display_name "Wolf"
+        - define wolf_display_name Wolf
       - define current_loc <[wolf].location>
       - define hp <[wolf].health.round>
       - define max_hp <[wolf].health_max.round>
@@ -252,7 +252,7 @@ guard_wolf_toggle:
       - if <context.target.is_player>:
         # Never attack players
         - determine cancelled
-      - if <context.target.entity_type> == CREEPER:
+      - if <context.target.type> == CREEPER:
         # Never attack creepers (explosions!)
         - determine cancelled
       - if !<context.target.is_monster>:
@@ -261,7 +261,7 @@ guard_wolf_toggle:
 
     # Notify owner when guard wolf dies
     on entity dies:
-    - if <context.entity.entity_type> == WOLF && <context.entity.has_flag[guard_mode]>:
+    - if <context.entity.type> == WOLF && <context.entity.has_flag[guard_mode]>:
       - define owner <context.entity.flag[original_owner]>
       - define wolf <context.entity>
 
@@ -270,7 +270,7 @@ guard_wolf_toggle:
       - if <[wolf].custom_name.exists>:
         - define wolf_name <[wolf].custom_name>
       - else:
-        - define wolf_name "Wolf"
+        - define wolf_name Wolf
       - define location <[wolf].location.simple>
 
       # Get cause of death
@@ -278,7 +278,7 @@ guard_wolf_toggle:
         - if <context.damager.is_player>:
           - define cause "killed by <context.damager.name>"
         - else:
-          - define cause "killed by <context.damager.entity_type.to_titlecase>"
+          - define cause "killed by <context.damager.type.to_titlecase>"
       - else:
         - define cause <context.cause.to_titlecase.replace[_].with[ ]>
 
@@ -308,7 +308,7 @@ guard_wolf_combat:
       - define nearby_mobs <[wolf].location.find_entities[monster].within[15]>
 
       # Filter out creepers (don't want explosions!)
-      - define valid_targets <[nearby_mobs].exclude[entity_type.equals[CREEPER]]>
+      - define valid_targets <[nearby_mobs].exclude[type.equals[CREEPER]]>
 
       - if !<[valid_targets].is_empty>:
         - define target <[valid_targets].get[1]>
