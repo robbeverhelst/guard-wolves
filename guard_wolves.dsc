@@ -75,7 +75,7 @@ guard_wolves_command:
   script:
   # Validate player exists (console check)
   - if !<player.exists>:
-    - narrate "<red>This command must be run by a player" targets:<server.match_player[<context.server||null>]||<server>>
+    - narrate "<red>This command must be run by a player"
     - stop
 
   # Get subcommand
