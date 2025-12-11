@@ -16,8 +16,7 @@ get_armor_icon:
   debug: false
   definitions: wolf
   script:
-  - define armor_item <[wolf].equipment_map.get[body]||air>
-  - if <[armor_item]> != air:
+  - if <[wolf].equipment_map.contains[body]>:
     - determine 🛡<&sp>
   - else:
     - determine <empty>
@@ -162,10 +161,10 @@ guard_wolf_toggle:
   debug: false
   events:
     # Prevent healing guard wolves with meat - show warning instead
-    on player right clicks entity_flagged:guard_mode with:raw_beef|cooked_beef|raw_porkchop|cooked_porkchop|raw_chicken|cooked_chicken|raw_mutton|cooked_mutton|raw_rabbit|cooked_rabbit|rotten_flesh:
-    - determine cancelled
+    on player right clicks entity_flagged:guard_mode with:vanilla_tagged:wolf_food:
     - narrate "<red>You can't heal a guarding wolf. Disable guard mode first to heal it."
     - playsound <player> sound:entity_wolf_whine pitch:0.8 volume:1
+    - determine cancelled
 
     # Player right-clicks a wolf with a STICK
     on player right clicks wolf with:stick:
