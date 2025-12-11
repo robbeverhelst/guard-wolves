@@ -4,7 +4,7 @@ get_armor_icon:
   definitions: wolf
   script:
   - define armor_item <[wolf].equipment_map.get[body]||air>
-  - if <[armor_item].material.name> != air:
+  - if <[armor_item]> != air:
     - determine "🛡 "
   - else:
     - determine ""
