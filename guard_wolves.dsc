@@ -465,8 +465,8 @@ guard_wolf_wander:
         # Only issue walk command if wolf is NOT already moving back
         - if <[velocity]> < 0.1:
           - if <[show_debug]>:
-            - narrate "<yellow>[RETURN] Wolf too far, walking back to guard center slowly" targets:<[owner]>
-          - walk <[wolf]> <[center]> speed:0.3
+            - narrate "<yellow>[RETURN] Wolf too far, walking back to guard center" targets:<[owner]>
+          - walk <[wolf]> <[center]>
         - else:
           - if <[show_debug]>:
             - narrate "<gray>[SKIP] Wolf already moving (probably walking back)" targets:<[owner]>
