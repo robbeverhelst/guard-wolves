@@ -1,3 +1,16 @@
+guard_wolves_constants:
+  type: data
+  # Wolf health settings
+  max_wolf_health: 40
+  # Combat and patrol distances
+  combat_range: 15
+  max_wander_distance: 15
+  home_check_distance: 3
+  # Timer settings (seconds)
+  stuck_teleport_time: 60
+  home_teleport_time: 120
+  home_check_cycles: 15
+
 get_armor_icon:
   type: procedure
   debug: false
@@ -8,6 +21,18 @@ get_armor_icon:
     - determine 🛡<&sp>
   - else:
     - determine <empty>
+
+format_wolf_display:
+  type: procedure
+  debug: false
+  definitions: wolf
+  script:
+  - define variant <[wolf].variant.to_titlecase>
+  - define wolf_display_name <[wolf].custom_name.if_null[Wolf]>
+  - define hp <[wolf].health.round>
+  - define max_hp <[wolf].health_max.round>
+  - define armor_icon <proc[get_armor_icon].context[<[wolf]>]>
+  - determine <[wolf_display_name]>|<[variant]>|<[hp]>|<[max_hp]>|<[armor_icon]>
 
 guard_wolves_command:
   type: command
@@ -54,42 +79,21 @@ guard_wolves_command:
 
     # Display sitting wolves
     - foreach <[sitting_wolves]> as:wolf:
-      - define variant <[wolf].variant.to_titlecase>
-      - if <[wolf].custom_name.exists>:
-        - define wolf_display_name <[wolf].custom_name>
-      - else:
-        - define wolf_display_name Wolf
+      - define wolf_info <proc[format_wolf_display].context[<[wolf]>]>
       - define current_loc <[wolf].location>
-      - define hp <[wolf].health.round>
-      - define max_hp <[wolf].health_max.round>
-      - define armor_icon <proc[get_armor_icon].context[<[wolf]>]>
-      - narrate "<gray>• <aqua><[wolf_display_name]> <[armor_icon]><dark_gray>(<[variant]>) <red>❤ <[hp]>/<[max_hp]> <gray><italic>Sitting<&r> at <[current_loc].simple>"
+      - narrate "<gray>• <aqua><[wolf_info].get[1]> <[wolf_info].get[5]><dark_gray>(<[wolf_info].get[2]>) <red>❤ <[wolf_info].get[3]>/<[wolf_info].get[4]> <gray><italic>Sitting<&r> at <[current_loc].simple>"
 
     # Display guarding wolves
     - foreach <[guarding_wolves]> as:wolf:
-      - define variant <[wolf].variant.to_titlecase>
-      - if <[wolf].custom_name.exists>:
-        - define wolf_display_name <[wolf].custom_name>
-      - else:
-        - define wolf_display_name Wolf
+      - define wolf_info <proc[format_wolf_display].context[<[wolf]>]>
       - define guard_loc <[wolf].flag[guard_point]>
-      - define hp <[wolf].health.round>
-      - define max_hp <[wolf].health_max.round>
-      - define armor_icon <proc[get_armor_icon].context[<[wolf]>]>
-      - narrate "<green>• <aqua><[wolf_display_name]> <[armor_icon]><dark_gray>(<[variant]>) <red>❤ <[hp]>/<[max_hp]> <green><bold>GUARDING<&r> at <[guard_loc].simple>"
+      - narrate "<green>• <aqua><[wolf_info].get[1]> <[wolf_info].get[5]><dark_gray>(<[wolf_info].get[2]>) <red>❤ <[wolf_info].get[3]>/<[wolf_info].get[4]> <green><bold>GUARDING<&r> at <[guard_loc].simple>"
 
     # Display following wolves
     - foreach <[following_wolves]> as:wolf:
-      - define variant <[wolf].variant.to_titlecase>
-      - if <[wolf].custom_name.exists>:
-        - define wolf_display_name <[wolf].custom_name>
-      - else:
-        - define wolf_display_name Wolf
+      - define wolf_info <proc[format_wolf_display].context[<[wolf]>]>
       - define current_loc <[wolf].location>
-      - define hp <[wolf].health.round>
-      - define max_hp <[wolf].health_max.round>
-      - define armor_icon <proc[get_armor_icon].context[<[wolf]>]>
-      - narrate "<yellow>• <aqua><[wolf_display_name]> <[armor_icon]><dark_gray>(<[variant]>) <red>❤ <[hp]>/<[max_hp]> <yellow>Following at <[current_loc].simple>"
+      - narrate "<yellow>• <aqua><[wolf_info].get[1]> <[wolf_info].get[5]><dark_gray>(<[wolf_info].get[2]>) <red>❤ <[wolf_info].get[3]>/<[wolf_info].get[4]> <yellow>Following at <[current_loc].simple>"
 
     - stop
 
@@ -123,15 +127,16 @@ guard_wolf_startup:
       - foreach <[world_wolves]> as:wolf:
         - if <[wolf].has_flag[guard_mode]>:
           - define all_wolves:->:<[wolf]>
-          # Restore health to tamed wolf levels (40 HP max)
-          - adjust <[wolf]> max_health:40
+          # Restore health to tamed wolf levels
+          - define max_hp <script[guard_wolves_constants].data_key[max_wolf_health]>
+          - adjust <[wolf]> max_health:<[max_hp]>
           # Restore saved health if it exists
           - if <[wolf].has_flag[saved_health]>:
             - adjust <[wolf]> health:<[wolf].flag[saved_health]>
           - else:
-            # If no saved health, cap current health at 40
-            - if <[wolf].health> > 40:
-              - adjust <[wolf]> health:40
+            # If no saved health, cap current health at max
+            - if <[wolf].health> > <[max_hp]>:
+              - adjust <[wolf]> health:<[max_hp]>
 
     # Rebuild the server list
     - flag server guard_wolves:<[all_wolves]>
@@ -228,7 +233,7 @@ guard_wolf_toggle:
 
     # Wait for Minecraft to process owner removal, then fix health
     - wait 3t
-    - adjust <[wolf]> max_health:40
+    - adjust <[wolf]> max_health:<script[guard_wolves_constants].data_key[max_wolf_health]>
     - wait 1t
     - adjust <[wolf]> health:<[wolf].flag[saved_health]>
 
@@ -305,7 +310,8 @@ guard_wolf_combat:
         - foreach next
 
       # COMBAT: Check for nearby hostile mobs
-      - define nearby_mobs <[wolf].location.find_entities[monster].within[15]>
+      - define combat_range <script[guard_wolves_constants].data_key[combat_range]>
+      - define nearby_mobs <[wolf].location.find_entities[monster].within[<[combat_range]>]>
 
       # Filter out creepers (don't want explosions!)
       - define valid_targets <[nearby_mobs].exclude[type.equals[CREEPER]]>
@@ -360,14 +366,15 @@ guard_wolf_wander:
         - foreach next
 
       # Fix health if it's too low (happens after server restart)
-      - if <[wolf].health_max> < 40:
+      - define max_hp <script[guard_wolves_constants].data_key[max_wolf_health]>
+      - if <[wolf].health_max> < <[max_hp]>:
         - if <[show_debug]>:
-          - narrate "<yellow>[HEALTH FIX] Restoring health from <[wolf].health_max> to 40" targets:<[owner]>
-        # Restore to saved health if available, otherwise keep current health (capped at 40)
-        - define health_to_restore <[wolf].flag[saved_health]||<[wolf].health>>
-        - if <[health_to_restore]> > 40:
-          - define health_to_restore 40
-        - adjust <[wolf]> max_health:40
+          - narrate "<yellow>[HEALTH FIX] Restoring health from <[wolf].health_max> to <[max_hp]>" targets:<[owner]>
+        # Restore to saved health if available, otherwise keep current health (capped at max)
+        - define health_to_restore <[wolf].flag[saved_health].if_null[<[wolf].health>]>
+        - if <[health_to_restore]> > <[max_hp]>:
+          - define health_to_restore <[max_hp]>
+        - adjust <[wolf]> max_health:<[max_hp]>
         - adjust <[wolf]> health:<[health_to_restore]>
 
       # Always save current health so we can restore it after restart
@@ -399,21 +406,24 @@ guard_wolf_wander:
       - define cycle_count <[cycle_count].add[1]>
       - flag <[wolf]> cycle_count:<[cycle_count]>
 
-      # Only do home check every 15 cycles (every 2 minutes)
-      - if <[cycle_count]> >= 15:
+      # Only do home check every N cycles (every 2 minutes)
+      - define home_check_cycles <script[guard_wolves_constants].data_key[home_check_cycles]>
+      - if <[cycle_count]> >= <[home_check_cycles]>:
         - flag <[wolf]> cycle_count:0
         - if <[show_debug]>:
           - narrate "<gold>[HOME CHECK] Running home check..." targets:<[owner]>
 
-        # If wolf is more than 3 blocks from home for 2+ minutes, teleport
-        - if <[distance]> > 3:
+        # If wolf is more than N blocks from home for 2+ minutes, teleport
+        - define home_dist <script[guard_wolves_constants].data_key[home_check_distance]>
+        - if <[distance]> > <[home_dist]>:
           # Wolf is away from home
           - if <[wolf].has_flag[away_from_home]>:
             - define time_away <util.time_now.duration_since[<[wolf].flag[away_from_home]>].in_seconds>
             - if <[show_debug]>:
               - narrate "<yellow>[HOME CHECK] Wolf away from home for <[time_away].round> seconds" targets:<[owner]>
-            # If away for more than 2 minutes (120 seconds), teleport home
-            - if <[time_away]> > 120:
+            # If away for more than 2 minutes, teleport home
+            - define home_tp_time <script[guard_wolves_constants].data_key[home_teleport_time]>
+            - if <[time_away]> > <[home_tp_time]>:
               - if <[show_debug]>:
                 - narrate "<red>[HOME CHECK] Wolf stuck away from home, teleporting!" targets:<[owner]>
               - walk <[wolf]> stop
@@ -436,16 +446,18 @@ guard_wolf_wander:
             - if <[show_debug]>:
               - narrate "<green>[HOME CHECK] Wolf returned home, cleared timer" targets:<[owner]>
 
-      # If wolf wandered too far (>15 blocks), walk it back to center
-      - if <[distance]> > 15:
+      # If wolf wandered too far, walk it back to center
+      - define max_wander <script[guard_wolves_constants].data_key[max_wander_distance]>
+      - if <[distance]> > <[max_wander]>:
         # Check if wolf has been trying to return for too long (stuck timer)
         - if <[wolf].has_flag[return_started]>:
           - define time_stuck <util.time_now.duration_since[<[wolf].flag[return_started]>].in_seconds>
           - if <[show_debug]>:
             - narrate "<yellow>[STUCK_TIMER] Wolf has been trying to return for <[time_stuck].round> seconds" targets:<[owner]>
 
-          # If stuck for more than 1 minute (60 seconds), teleport
-          - if <[time_stuck]> > 60:
+          # If stuck for more than 1 minute, teleport
+          - define stuck_tp_time <script[guard_wolves_constants].data_key[stuck_teleport_time]>
+          - if <[time_stuck]> > <[stuck_tp_time]>:
             - if <[show_debug]>:
               - narrate "<red>[TELEPORT] Wolf stuck for 1+ minute, teleporting back!" targets:<[owner]>
             - walk <[wolf]> stop
